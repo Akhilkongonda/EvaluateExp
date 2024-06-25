@@ -103,8 +103,6 @@ function Calculator() {
         while (operatorStack.length > 0) {
             outputQueue.push(operatorStack.pop());
         }
-    
-        // Evaluate the RPN expression
         const stack = [];
         outputQueue.forEach(token => {
             if (!isNaN(token)) {

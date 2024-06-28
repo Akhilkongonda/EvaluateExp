@@ -4,14 +4,34 @@
     height: 40px;
   }
 
-.cardlayout{
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+}
 
+
+.header {
+    font-size: 30px;
+    font-weight: bold;
+    margin: 20px;
+    color: rgb(60, 177, 207);
+    margin-top: 90px;
+}   
+
+.cardlayout{
     border-radius: 10px;
     padding: 10px;
     margin: 10px;
     background-color: rgb(255, 255, 255);
-
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    width: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 .large-input:hover {
     border: 2px solid rgb(42, 146, 210);
   }

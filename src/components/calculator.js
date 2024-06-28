@@ -9,16 +9,20 @@ function Calculator() {
     const onSubmit = (data) => {
         try {
             const evalResult = evaluateExpression(data.expression);
-            setResult(evalResult);
+            if (isNaN(evalResult)) {
+                setResult('Invalid expression');
+            } else {
+                setResult(evalResult);
+            }
         } catch {
             setResult('Invalid expression');
         }
     };
+
     function tokenize(expression) {
         let tokens = [];
         let currentToken = '';
     
-        // Function to push currentToken as a token
         const pushCurrentToken = () => {
             if (currentToken !== '') {
                 tokens.push(currentToken);
@@ -30,31 +34,25 @@ function Calculator() {
             let char = expression[i];
     
             if ('+-*/()'.includes(char)) {
-                // Operator or parenthesis encountered
                 if (char === '-' && (i === 0 || '+-*/('.includes(expression[i - 1]))) {
-                    // Negative sign handling for negative numbers
                     currentToken += '-';
                 } else {
-                    pushCurrentToken(); // Push currentToken as a number token
-                    tokens.push(char); // Push the operator or parenthesis as a separate token
+                    pushCurrentToken();
+                    tokens.push(char);
                 }
             } else if (!isNaN(char) || char === '.') {
-                // Digit or decimal point encountered
-                currentToken += char; // Append to currentToken
+                currentToken += char;
             } else if (char === ' ') {
-                // Skip spaces
-                pushCurrentToken(); // Push the current token if any
+                pushCurrentToken();
             } else {
-                // Invalid character encountered
                 throw new Error(`Invalid character encountered: ${char}`);
             }
         }
     
-        // Push the last accumulated token
         pushCurrentToken();
-    
         return tokens;
     }
+
     function evaluateExpression(expression) {
         const tokens = tokenize(expression);
         const outputQueue = [];
@@ -76,11 +74,8 @@ function Calculator() {
     
         tokens.forEach(token => {
             if (!isNaN(token)) {
-                // If the token is a number, add it to the output queue
                 outputQueue.push(token);
             } else if ('+-*/'.includes(token)) {
-                // If the token is an operator, pop operators from the stack to the output queue
-                // while they have greater precedence or the same precedence and are left associative
                 while (operatorStack.length > 0 && '*/+-'.includes(operatorStack[operatorStack.length - 1]) &&
                     ((associativity[token] === 'L' && precedence[token] <= precedence[operatorStack[operatorStack.length - 1]]) ||
                     (associativity[token] === 'R' && precedence[token] < precedence[operatorStack[operatorStack.length - 1]]))) {
@@ -88,21 +83,26 @@ function Calculator() {
                 }
                 operatorStack.push(token);
             } else if (token === '(') {
-                // If the token is a left parenthesis, push it onto the stack
                 operatorStack.push(token);
             } else if (token === ')') {
-                // If the token is a right parenthesis, pop from the stack to the output queue until a left parenthesis is encountered
                 while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
                     outputQueue.push(operatorStack.pop());
                 }
-                operatorStack.pop(); // Pop the left parenthesis from the stack
+                if (operatorStack.length === 0) {
+                    throw new Error("Mismatched parentheses");
+                }
+                operatorStack.pop();
             }
         });
     
-        // Pop all the remaining operators in the stack to the output queue
         while (operatorStack.length > 0) {
-            outputQueue.push(operatorStack.pop());
+            const op = operatorStack.pop();
+            if (op === '(' || op === ')') {
+                throw new Error("Mismatched parentheses");
+            }
+            outputQueue.push(op);
         }
+
         const stack = [];
         outputQueue.forEach(token => {
             if (!isNaN(token)) {
@@ -121,8 +121,13 @@ function Calculator() {
                         stack.push(a * b);
                         break;
                     case '/':
+                        if (b === 0) {
+                            throw new Error("Division by zero");
+                        }
                         stack.push(a / b);
                         break;
+                    default:
+                        throw new Error(`Invalid operator encountered: ${token}`);
                 }
             }
         });
@@ -131,8 +136,11 @@ function Calculator() {
     }
     
     return (
-        <div>
-            <p className='header'>Calculator</p>
+        <div className="calculator">
+        <h2 className='header'>calculator</h2>
+    
+        <div className="container">
+           
             <div className="card cardlayout">
                 <div className="card-body">
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -143,7 +151,7 @@ function Calculator() {
                                 className='large-input'
                                 {...register('expression', { required: true })}
                             />
-                            {errors.expression && <p className="error">This field is required</p>}
+                            {errors.expression && <p className="error" style={{'color':'red'}}>This field is required</p>}
                         </div>
                         <div>
                             <button className='submitbutton' type="submit">
@@ -151,9 +159,10 @@ function Calculator() {
                             </button>
                         </div>
                     </form>
-                    {result !== '' && <div className="result">Result: {result}</div>}
+                    {result !== '' && <div className="resul" style={{'color':'green'}}    ><p>Result: {result}</p></div>}
                 </div>
             </div>
+        </div>
         </div>
     );
 }
